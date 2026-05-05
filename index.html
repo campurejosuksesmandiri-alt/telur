@@ -342,25 +342,43 @@ let limitTelur = 20; // Tambahkan ini
             await refreshData(); setTabBiaya('telur');
         }
 
-        function renderLaporan() {
-            const bln = document.getElementById('lap-bulan').value;
-            const trx = dbData.transaksi.filter(t => t[1].startsWith(bln));
-            const exp = dbData.biaya.filter(b => b[1].startsWith(bln));
-            const egg = dbData.telur.filter(e => e[1].startsWith(bln));
-            const sTrx = trx.reduce((a,b)=>a+b[5], 0);
-            const sExp = exp.reduce((a,b)=>a+b[3], 0);
-            const sEgg = egg.reduce((a,b)=>a+b[2], 0);
-            document.getElementById('lap-res').innerHTML = `
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="p-4 bg-blue-50 rounded-2xl text-left"><p class="text-[9px] font-bold text-blue-400">PENJUALAN</p><p class="font-bold text-navy">Rp ${sTrx.toLocaleString()}</p></div>
-                    <div class="p-4 bg-red-50 rounded-2xl text-left"><p class="text-[9px] font-bold text-red-400">BIAYA</p><p class="font-bold text-red-600">Rp ${sExp.toLocaleString()}</p></div>
-                </div>
-                <div class="p-5 bg-yellow-50 rounded-2xl text-left border border-yellow-100">
-                    <p class="text-[9px] font-bold text-yellow-600 uppercase">Total Produksi Telur</p>
-                    <p class="text-2xl font-black text-yellow-700">${sEgg.toLocaleString()} <span class="text-xs">Pcs/Kg</span></p>
-                </div>
-                <div class="p-6 bg-navy text-white rounded-3xl"><p class="text-[10px] font-bold opacity-60">LABA BERSIH</p><p class="text-2xl font-black">Rp ${(sTrx-sExp).toLocaleString()}</p></div>`;
-        }
+       function renderLaporan() {
+    const bln = document.getElementById('lap-bulan').value;
+    const trx = dbData.transaksi.filter(t => t[1].startsWith(bln));
+    const exp = dbData.biaya.filter(b => b[1].startsWith(bln));
+    
+    const sTrx = trx.reduce((a,b)=>a+b[5], 0);
+    const sExp = exp.reduce((a,b)=>a+b[3], 0);
+    
+    // Total Modal Keseluruhan (Bukan per bulan, tapi akumulasi)
+    const totalModal = dbData.modal.reduce((a, b) => a + b[3], 0);
+    const totalTrxAll = dbData.transaksi.reduce((a, b) => a + b[5], 0);
+    const totalExpAll = dbData.biaya.reduce((a, b) => a + b[3], 0);
+    const saldoSaatIni = (totalModal + totalTrxAll) - totalExpAll;
+
+    document.getElementById('lap-res').innerHTML = `
+        <div class="grid grid-cols-2 gap-3 mb-4">
+            <div class="p-4 bg-blue-50 rounded-2xl text-left">
+                <p class="text-[9px] font-bold text-blue-400 uppercase">Penjualan Bulan Ini</p>
+                <p class="font-bold text-navy">Rp ${sTrx.toLocaleString()}</p>
+            </div>
+            <div class="p-4 bg-red-50 rounded-2xl text-left">
+                <p class="text-[9px] font-bold text-red-400 uppercase">Biaya Bulan Ini</p>
+                <p class="font-bold text-red-600">Rp ${sExp.toLocaleString()}</p>
+            </div>
+        </div>
+
+        <div class="p-6 bg-white border border-gray-100 rounded-3xl mb-4 shadow-sm">
+            <p class="text-[10px] font-bold text-gray-400 uppercase">Laba Bersih Operasional (${bln})</p>
+            <p class="text-2xl font-black text-green-600">Rp ${(sTrx-sExp).toLocaleString()}</p>
+        </div>
+
+        <div class="p-6 bg-navy text-white rounded-3xl">
+            <p class="text-[10px] font-bold opacity-60 uppercase">Total Saldo Kas BUMDes</p>
+            <p class="text-2xl font-black">Rp ${saldoSaatIni.toLocaleString()}</p>
+            <p class="text-[9px] mt-2 opacity-50">*Sudah termasuk modal awal desa Rp 230jt</p>
+        </div>`;
+}
 
         async function resetData() {
             if(!confirm("Hapus seluruh data?")) return;
