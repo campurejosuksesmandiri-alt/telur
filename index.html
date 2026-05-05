@@ -67,12 +67,25 @@ let limitTelur = 20; // Tambahkan ini
         }
 
         function updateDashboard() {
-            const today = new Date().toISOString().split('T')[0];
-            const tInc = dbData.transaksi.reduce((a,b)=>a+b[5], 0);
-            const tExp = dbData.biaya.reduce((a,b)=>a+b[3], 0);
-            const eToday = dbData.telur.filter(e => e[1].startsWith(today)).reduce((a,b)=>a+b[2], 0);
-            document.getElementById('dash-saldo').innerText = `Rp ${(tInc - tExp).toLocaleString()}`;
-            document.getElementById('dash-egg').innerText = `${eToday} Pcs/Kg`;
+    const today = new Date().toISOString().split('T')[0];
+    
+    // 1. Hitung Total Modal Desa
+    const tModal = dbData.modal ? dbData.modal.reduce((a, b) => a + b[3], 0) : 0;
+    
+    // 2. Hitung Total Penjualan Telur
+    const tInc = dbData.transaksi.reduce((a, b) => a + b[5], 0);
+    
+    // 3. Hitung Total Biaya Operasional (Pakan, Obat, dll)
+    const tExp = dbData.biaya.reduce((a, b) => a + b[3], 0);
+    
+    const eToday = dbData.telur.filter(e => e[1].startsWith(today)).reduce((a, b) => a + b[2], 0);
+    
+    // SALDO AKHIR = (Modal + Penjualan) - Biaya
+    const saldoAkhir = (tModal + tInc) - tExp;
+    
+    document.getElementById('dash-saldo').innerText = `Rp ${saldoAkhir.toLocaleString()}`;
+    document.getElementById('dash-egg').innerText = `${eToday} Pcs/Kg`;
+
         }
 
         const pages = {
